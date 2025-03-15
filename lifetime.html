@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Progress Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 30px;
+    }
+    .result .percent {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .week {
+      height: 30px;
+      flex-grow: 1;
+      margin: 1px;
+    }
+    .current-week {
+      animation: blink 12s infinite;
+      font-size: 36px;
+      font-weight: bold;
+    }
+    @keyframes blink {
+      0% { color: black; }
+      25% { color: blue; }
+      50% { color: green; }
+      75% { color: red; }
+      100% { color: black; }
+    }
+    .blue { background-color: blue; }
+    .green { background-color: green; }
+    .blue-text { color: blue; }
+    .green-text { color: green; }
+    @media (max-width: 600px) {
+      .week {
+        height: 20px;
+      }
+    }
+    .percent-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Life Progress Tracker</h1>
+    <input type="text" id="name" placeholder="Enter your name" required>
+    <input type="date" id="dob" required>
+    <input type="number" id="years" placeholder="Years to live (default 63)" value="63" min="1" required>
+    <button onclick="calculateProgress()">Submit</button>
+  </div>
+
+  <div class="result" id="result"></div>
+  <div class="grid" id="grid"></div>
+  <div class="percent-container" id="percent-container"></div>
+
+  <script>
+    function calculateProgress() {
+      const name = document.getElementById('name').value;
+      const dob = new Date(document.getElementById('dob').value);
+      const yearsToLive = parseInt(document.getElementById('years').value);
+      
+      if (!name || !dob || !yearsToLive) return;
+
+      const currentDate = new Date();
+      const totalWeeks = yearsToLive * 52;
+      const passedWeeks = Math.floor((currentDate - dob) / (1000 * 60 * 60 * 24 * 7));
+      const remainingWeeks = totalWeeks - passedWeeks;
+      const currentWeek = Math.floor((currentDate - new Date(dob.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24 * 7));
+
+      const pastPercent = Math.min((passedWeeks / totalWeeks) * 100, 100);
+      const remainingPercent = Math.min((remainingWeeks / totalWeeks) * 100, 100);
+
+      document.getElementById('result').innerHTML = `
+        <div><strong>${name}</strong></div>
+        <div><span class="blue-text">${passedWeeks}</span> weeks of your life are gone</div>
+        <div><span class="green-text">${remainingWeeks}</span> weeks in your life left</div>
+        <div>You are in <span class="current-week">${currentWeek}</span> week of your life</div>
+      `;
+
+      document.getElementById('percent-container').innerHTML = `
+        <div class="percent">Past: <span class="blue-text">${pastPercent.toFixed(2)}%</span> | Remaining: <span class="green-text">${remainingPercent.toFixed(2)}%</span></div>
+      `;
+
+      createGrid(passedWeeks, remainingWeeks, totalWeeks);
+    }
+
+    function createGrid(passedWeeks, remainingWeeks, totalWeeks) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+
+      const pastWeeks = Math.floor((passedWeeks / totalWeeks) * 100);
+      const remainingWeeksWidth = Math.floor((remainingWeeks / totalWeeks) * 100);
+
+      const screenWidth = window.innerWidth;
+      const totalCells = Math.floor(screenWidth / 8); // Dynamically calculate based on screen width
+      const pastCells = Math.floor((pastWeeks / 100) * totalCells);
+      const remainingCells = Math.floor((remainingWeeks / 100) * totalCells);
+
+      // Create grid cells based on the percentages
+      for (let i = 0; i < totalCells; i++) {
+        const week = document.createElement('div');
+        if (i < pastCells) {
+          week.classList.add('week', 'blue');
+        } else if (i < pastCells + remainingCells) {
+          week.classList.add('week', 'green');
+        } else if (i === pastCells + remainingCells - 1) {
+          // Last blue grid cell should blink
+          week.classList.add('week', 'blue', 'current-week');
+        } else if (i === pastCells + remainingCells) {
+          // First green grid cell should blink
+          week.classList.add('week', 'green', 'current-week');
+        } else {
+          week.classList.add('week');
+        }
+        grid.appendChild(week);
+      }
+    }
+  </script>
+</body>
+</html>
