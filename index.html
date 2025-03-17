@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Progress Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+      gap: 2px;
+      width: 100%;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+    .week {
+      width: 10px;
+      height: 10px;
+    }
+    .past {
+      background-color: red;
+    }
+    .remaining {
+      background-color: green;
+    }
+    .current {
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { background-color: black; }
+      50% { background-color: yellow; }
+      100% { background-color: black; }
+    }
+    .blinking-number {
+      animation: blink-text 3s infinite;
+    }
+    @keyframes blink-text {
+      0% { color: black; }
+      25% { color: green; }
+      50% { color: red; }
+      75% { color: blue; }
+      100% { color: black; }
+    }
+    .red-text { color: red; }
+    .percent-text {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container" id="input-container">
+    <input type="text" id="name" placeholder="Enter your name" required>
+    <input type="date" id="dob" required>
+    <input type="number" id="years" placeholder="Years to live (default 63)" value="63" min="1" required>
+    <button onclick="calculateProgress()">Submit</button>
+  </div>
+  <div class="result hidden" id="result"></div>
+  <div class="grid hidden" id="grid"></div>
+  <div class="percent-text hidden" id="percent-text"></div>
+  
+  <script>
+    function calculateProgress() {
+      document.getElementById('input-container').classList.add('hidden');
+      document.getElementById('result').classList.remove('hidden');
+      document.getElementById('grid').classList.remove('hidden');
+      document.getElementById('percent-text').classList.remove('hidden');
+
+      const name = document.getElementById('name').value || "User";
+      const dob = new Date(document.getElementById('dob').value);
+      const yearsToLive = parseInt(document.getElementById('years').value) || 63;
+      
+      const currentDate = new Date();
+      const totalWeeks = yearsToLive * 52;
+      const passedWeeks = Math.floor((currentDate - dob) / (1000 * 60 * 60 * 24 * 7));
+      const remainingWeeks = totalWeeks - passedWeeks;
+      const currentWeek = passedWeeks;
+      
+      const pastPercent = ((passedWeeks / totalWeeks) * 100).toFixed(2);
+      
+      document.getElementById('result').innerHTML = `
+        <div style="font-size: 36px; font-weight: bold;"> 
+          <span class="red-text">Attention</span> ${name}:: Only <span class="blinking-number">${remainingWeeks}</span> weeks of your life left
+        </div>
+        <div class="percent-text">${pastPercent}% of your life has passed</div>
+      `;
+      
+      generateGrid(passedWeeks, remainingWeeks, totalWeeks, currentWeek);
+    }
+
+    function generateGrid(passedWeeks, remainingWeeks, totalWeeks, currentWeek) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      
+      for (let i = 0; i < totalWeeks; i++) {
+        const week = document.createElement('div');
+        week.classList.add('week');
+        
+        if (i < passedWeeks) {
+          week.classList.add('past');
+        } else if (i === currentWeek) {
+          week.classList.add('current');
+        } else {
+          week.classList.add('remaining');
+        }
+        
+        grid.appendChild(week);
+      }
+    }
+  </script>
+</body>
+</html>
